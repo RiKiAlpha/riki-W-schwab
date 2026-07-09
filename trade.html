@@ -1224,7 +1224,7 @@ var RIKI_W_APP_NAME = 'RiKi W — Schwab Normal Customer — Low Order Mode';
 var RIKI_W_ACCOUNT_LAST4 = 'PLACEHOLDER_WIFE_ACCOUNT_LAST4'; // replace after rikiWDiscoverAccountsForWhitelist()
 function rikiWAccountLast4_(){ return String(RIKI_W_ACCOUNT_LAST4 || '').trim(); }
 function rikiWFirstBuyingPower_(bp){ bp = bp || {}; return bp.RIKI_W || bp.ACCOUNT_1 || bp[rikiWAccountLast4_()] || bp['RiKi W'] || 0; }
-var BACKEND = 'PLACEHOLDER_RIKI_W_APPS_SCRIPT_EXEC_URL';
+var BACKEND = 'https://script.google.com/a/macros/rikiterminal.com/s/AKfycbzY4H7idtbqpC1EBvm0z11qGpyo3_LZK8xGVYxprgrsFBfCOQdaMMMX2DaXoEpEaIaP/exec';
 var S = {
   ticker: localStorage.getItem('tr_ticker') || 'MSTR',
   expiryIdx: parseInt(localStorage.getItem('tr_exp') || '0'),

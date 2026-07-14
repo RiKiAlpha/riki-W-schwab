@@ -1232,7 +1232,58 @@ select.tradier-test-inp{appearance:none;-webkit-appearance:none;}
 var RIKI_W_APP_NAME = 'RiKi W — Schwab Normal Customer — Low Order Mode';
 var RIKI_W_ACCOUNT_LAST4 = 'PLACEHOLDER_WIFE_ACCOUNT_LAST4'; // replace after rikiWDiscoverAccountsForWhitelist()
 function rikiWAccountLast4_(){ return String(RIKI_W_ACCOUNT_LAST4 || '').trim(); }
-function rikiWFirstBuyingPower_(bp){ bp = bp || {}; return bp.RIKI_W || bp.ACCOUNT_1 || bp[rikiWAccountLast4_()] || bp['RiKi W'] || 0; }
+function rikiWNum_(v){
+  if(v == null || v === '') return 0;
+  if(typeof v === 'number') return isFinite(v) ? v : 0;
+  if(typeof v === 'object'){
+    var fields = ['buyingPower','availableFundsNonMarginableTrade','availableFunds','cashAvailableForTrading','optionBuyingPower','liquidationValue','value','amount'];
+    for(var i=0;i<fields.length;i++){
+      var nObj = rikiWNum_(v[fields[i]]);
+      if(nObj) return nObj;
+    }
+    return 0;
+  }
+  var n = parseFloat(String(v).replace(/[$,\s]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+function rikiWFirstBuyingPower_(bp){
+  bp = bp || {};
+  var last4 = rikiWAccountLast4_();
+  var preferred = ['RIKI_W','ACCOUNT_1','Account 1','Account1','RiKi W','W',last4].filter(function(k){ return k && k !== 'PLACEHOLDER_WIFE_ACCOUNT_LAST4'; });
+  for(var i=0;i<preferred.length;i++){
+    if(Object.prototype.hasOwnProperty.call(bp, preferred[i])){
+      var n = rikiWNum_(bp[preferred[i]]);
+      if(n) return n;
+    }
+  }
+  var keys = Object.keys(bp || {});
+  for(var j=0;j<keys.length;j++){
+    var n2 = rikiWNum_(bp[keys[j]]);
+    if(n2) return n2;
+  }
+  return 0;
+}
+function rikiWBuyingPowerDebug_(bp){
+  try { return Object.keys(bp || {}).map(function(k){ return k + '=' + rikiWNum_(bp[k]); }).join(' | '); }
+  catch(e){ return ''; }
+}
+function rikiWPaintBuyingPower_(bp){
+  bp = bp || {};
+  var n = rikiWFirstBuyingPower_(bp);
+  var debug = rikiWBuyingPowerDebug_(bp);
+  ['hdr-bp1','bp1','cf-bp1'].forEach(function(id){
+    var el = ge(id);
+    if(el){
+      el.textContent = n ? fmtM(n) : '—';
+      el.title = debug || 'No buying power returned by backend. Check RiKi W account whitelist.';
+    }
+  });
+  ['hdr-bp2','bp2','cf-bp2'].forEach(function(id){ var el=ge(id); if(el){ el.textContent='—'; el.title='RiKi W single-account mode'; } });
+  if(!n){
+    console.warn('[RiKi W] Buying power missing/zero. bpMap=', bp, 'debug=', debug);
+  }
+  return n;
+}
 var BACKEND = 'https://script.google.com/a/macros/rikiterminal.com/s/AKfycbzY4H7idtbqpC1EBvm0z11qGpyo3_LZK8xGVYxprgrsFBfCOQdaMMMX2DaXoEpEaIaP/exec';
 var S = {
   ticker: localStorage.getItem('riki_w_tr_ticker') || 'MSTR',
@@ -4263,15 +4314,15 @@ function doFetch(firstTime, opts){
       ge('market-pill').textContent = d.marketOpen ? 'LIVE' : 'CLOSED';
       ge('market-pill').className = d.marketOpen ? 'live' : 'closed';
 
+      S.bpMap = d.bpMap || {};
       if(rikiGetBrokerMode && rikiGetBrokerMode() === 'TRADIER'){
-        ge('hdr-bp1').textContent = fmtM(d.bpMap && (d.bpMap['TRADIER'] || rikiWFirstBuyingPower_(d.bpMap)));
-        ge('hdr-bp2').textContent = '—';
+        var tradierBp = {};
+        tradierBp.TRADIER = S.bpMap['TRADIER'] || S.bpMap.RIKI_W || rikiWFirstBuyingPower_(S.bpMap);
+        rikiWPaintBuyingPower_(tradierBp);
       } else {
-        ge('hdr-bp1').textContent = fmtM(d.bpMap && rikiWFirstBuyingPower_(d.bpMap));
-        ge('hdr-bp2').textContent = fmtM(0);
+        rikiWPaintBuyingPower_(S.bpMap);
       }
 
-      S.bpMap = d.bpMap || {};
       S.data = d.chains || {};
       rikiApplyBrokerAccountUiV5_4();
       S._lastMissingFetch = '';
@@ -4557,9 +4608,10 @@ function updateSheetCalcs(){
   ge('st-exp-sub').textContent=totalContracts+' contract'+(totalContracts===1?'':'s')+' total @ $'+S.price.toFixed(2);
   
   if(rikiGetBrokerMode && rikiGetBrokerMode() === 'TRADIER'){
-    ge('bp1').textContent=fmtM(S.bpMap['TRADIER'] || rikiWFirstBuyingPower_(S.bpMap)); ge('bp2').textContent='—';
+    var tradierBp = {}; tradierBp.TRADIER = S.bpMap['TRADIER'] || S.bpMap.RIKI_W || rikiWFirstBuyingPower_(S.bpMap);
+    rikiWPaintBuyingPower_(tradierBp);
   } else {
-    ge('bp1').textContent=fmtM(rikiWFirstBuyingPower_(S.bpMap)); ge('bp2').textContent=fmtM(0);
+    rikiWPaintBuyingPower_(S.bpMap);
   }
 }
 
@@ -4609,9 +4661,10 @@ function doStage(){
   ge('sumbox').innerHTML=html;
   
   if(rikiGetBrokerMode && rikiGetBrokerMode() === 'TRADIER'){
-    ge('cf-bp1').textContent=fmtM(S.bpMap['TRADIER'] || rikiWFirstBuyingPower_(S.bpMap)); ge('cf-bp2').textContent='—';
+    var tradierBp2 = {}; tradierBp2.TRADIER = S.bpMap['TRADIER'] || S.bpMap.RIKI_W || rikiWFirstBuyingPower_(S.bpMap);
+    rikiWPaintBuyingPower_(tradierBp2);
   } else {
-    ge('cf-bp1').textContent=fmtM(rikiWFirstBuyingPower_(S.bpMap)); ge('cf-bp2').textContent=fmtM(0);
+    rikiWPaintBuyingPower_(S.bpMap);
   }
   
   var btn=ge('cfbtn'); btn.className='cfbtn '+S.activeType;

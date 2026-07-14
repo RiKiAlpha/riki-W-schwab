@@ -508,6 +508,7 @@ body.overlaying #tabs-wrap{display:none !important;}
   </svg>
 </div>
 <script>
+// RIKI_W_V4_AUTH_EXCHANGE_CALLBACK_FIX_20260714
 var BACKEND     = 'https://script.google.com/a/macros/rikiterminal.com/s/AKfycbzY4H7idtbqpC1EBvm0z11qGpyo3_LZK8xGVYxprgrsFBfCOQdaMMMX2DaXoEpEaIaP/exec';
 var DATA_JSON   = '';
 var CLIENT_ID   = '632213689535-vlhn0mn0bkg4dntjul9fi1kb31i3kcos.apps.googleusercontent.com';
@@ -2126,6 +2127,7 @@ function onGoogleSignIn(response){
     localStorage.setItem('riki_w_google_email', payload.email);
     localStorage.setItem('riki_w_last_active', String(Date.now()));
     ge('auth-screen').classList.remove('on');
+    rikiMaybeRefreshAuthDisplay_('google-signin');
     startLoadingData();
   } catch(e){ ge('auth-err').style.display='block'; }
 }
@@ -2287,21 +2289,83 @@ function rikiRefreshTokenStatusOnly_(reason){
     .catch(function(e){ try{ console.warn('tokenStatus refresh failed', e); }catch(x){} });
 }
 
+
+function rikiUrlHasSchwabCode_(){
+  try { return /[?&]code=/i.test(window.location.search || ''); } catch(e){ return false; }
+}
+
+function rikiHandleSchwabOAuthReturn_(reason){
+  try{
+    var qs = window.location.search || '';
+    if(!/[?&]code=/i.test(qs)) return Promise.resolve(null);
+
+    var params = new URLSearchParams(qs);
+    var code = params.get('code') || '';
+    if(!code) return Promise.resolve(null);
+
+    // One browser tab can run init/visibility/google callbacks more than once.
+    // Prevent duplicate exchange attempts for the same one-time Schwab auth code.
+    var seenKey = 'riki_w_schwab_exchange_seen_' + String(code).slice(0, 32);
+    if(sessionStorage.getItem(seenKey) === '1') return Promise.resolve(null);
+    sessionStorage.setItem(seenKey, '1');
+
+    toast('Saving Schwab auth…', 2400);
+
+    return fetch(BACKEND + '?action=exchangeCode&code=' + encodeURIComponent(code) + '&reason=' + encodeURIComponent(reason || 'oauth-return') + '&_=' + Date.now())
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d || d.success === false){
+          throw new Error((d && d.error) || 'exchangeCode failed');
+        }
+
+        try{
+          localStorage.removeItem('riki_auth_pending');
+          localStorage.removeItem('riki_w_auth_pending');
+        }catch(x){}
+
+        rikiApplyTokenStatus_(d);
+
+        // Remove the one-time Schwab code from the address bar after it is saved.
+        try{
+          window.history.replaceState({}, document.title, window.location.origin + window.location.pathname + window.location.hash);
+        }catch(x){}
+
+        toast('Schwab auth saved ✓', 3200);
+        return d;
+      })
+      .catch(function(e){
+        try{ sessionStorage.removeItem(seenKey); }catch(x){}
+        console.error('RiKi W Schwab exchangeCode failed', e);
+        toast('Auth save failed: ' + errMsg(e), 9000);
+        return { success:false, error:errMsg(e) };
+      });
+  }catch(e){
+    console.error('RiKi W OAuth return handler failed', e);
+    toast('Auth handler error: ' + errMsg(e), 9000);
+    return Promise.resolve({ success:false, error:errMsg(e) });
+  }
+}
+
 function rikiMaybeRefreshAuthDisplay_(reason){
   var pending=false;
-  try{ pending = localStorage.getItem('riki_w_auth_pending') === '1'; }catch(x){}
+  try{ pending = localStorage.getItem('riki_w_auth_pending') === '1' || localStorage.getItem('riki_auth_pending') === '1'; }catch(x){}
   var qs='';
   try{ qs = window.location.search || ''; }catch(x){}
-  if(pending || /[?&](code|auth|oauth|state)=/i.test(qs)){
+  if(/[?&]code=/i.test(qs)){
+    setTimeout(function(){ rikiHandleSchwabOAuthReturn_(reason||'auth-return'); }, 120);
+    return;
+  }
+  if(pending || /[?&](auth|oauth|state)=/i.test(qs)){
     setTimeout(function(){ rikiRefreshTokenStatusOnly_(reason||'auth-return'); }, 250);
   }
 }
 
 function initApp(){
+  // Handle Schwab redirect first so the one-time code is saved even before dashboard loading.
+  rikiMaybeRefreshAuthDisplay_('init');
   if(!isAuthed()){ showAuthScreen(); return; }
   if(checkLock()) return;
   startLoadingData();
-  rikiMaybeRefreshAuthDisplay_('init');
 }
 
 function startLoadingData(){

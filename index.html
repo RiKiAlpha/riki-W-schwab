@@ -589,6 +589,52 @@ function rikiWClearLegacyOriginKeys_(){
 }
 rikiWClearLegacyOriginKeys_();
 
+// RIKI_W_FORCE_CLEAN_BOOT_V2
+// One-time migration for the separate RiKi W app under the shared github.io origin.
+// Clears BOTH old main-RiKi and early RiKi-W cached dashboard/auth keys so the app
+// cannot first-paint the user's main RiKi dashboard after the repo/backend split.
+var RIKI_W_FRONTEND_CACHE_VERSION = '20260714_FORCE_CLEAN_V2';
+function rikiWForceCleanBootV2_(){
+  try{
+    var prev = localStorage.getItem('riki_w_frontend_cache_version') || '';
+    if(prev === RIKI_W_FRONTEND_CACHE_VERSION) return;
+    [
+      'riki_data',
+      'riki_w_data',
+      'riki_last_fresh',
+      'riki_w_last_fresh',
+      'riki_google_email',
+      'riki_w_google_email',
+      'riki_auth_pending',
+      'riki_w_auth_pending',
+      'riki_last_active',
+      'riki_w_last_active',
+      'riki_app_mode',
+      'riki_w_app_mode',
+      'riki_churner_ticker',
+      'riki_w_churner_ticker',
+      'riki_churner_focus_ticker',
+      'riki_w_churner_focus_ticker',
+      'riki_churner_focus',
+      'riki_w_churner_focus',
+      'riki_churner_asof',
+      'riki_w_churner_asof',
+      'riki_churner_asof_date',
+      'riki_w_churner_asof_date',
+      'faceLock',
+      'riki_w_faceLock',
+      'webauthn_cred_id',
+      'riki_w_webauthn_cred_id'
+    ].forEach(function(k){ localStorage.removeItem(k); });
+    sessionStorage.clear();
+    localStorage.setItem('riki_w_frontend_cache_version', RIKI_W_FRONTEND_CACHE_VERSION);
+    console.log('RiKi W clean boot V2 applied');
+  }catch(e){
+    try{ console.warn('RiKi W clean boot V2 failed', e); }catch(x){}
+  }
+}
+rikiWForceCleanBootV2_();
+
 var CHURNER_LOAD_CACHE = {}; // RIKI_V7_5 fast in-memory date+ticker sheet cache
 var CHURNER_LOAD_INFLIGHT = {}; // RIKI_V7_8 prevent duplicate date/ticker load executions
 var CHURNER_REBUILD_INFLIGHT = false; // RIKI_V7_8 one rebuild from this browser tab at a time
@@ -2094,14 +2140,15 @@ ge('bm').onclick=function(){switchHist('monthly');};
 ge('auth-btn').onclick=doAuth;
 
 // ── Auth + Face ID helpers ────────────────────────────────────────────────────
-function isAuthed(){ return !!localStorage.getItem('riki_google_email'); }
+function isAuthed(){ return String(localStorage.getItem('riki_w_google_email') || '') === String(ALLOWED_EMAIL || ''); }
 function showAuthScreen(){ ge('auth-screen').classList.add('on'); }
 
 function onGoogleSignIn(response){
   try {
     var payload = JSON.parse(atob(response.credential.split('.')[1]));
     if(payload.email !== ALLOWED_EMAIL){ ge('auth-err').style.display='block'; return; }
-    localStorage.setItem('riki_google_email', payload.email);
+    localStorage.removeItem('riki_google_email');
+    localStorage.setItem('riki_w_google_email', payload.email);
     localStorage.setItem('riki_w_last_active', String(Date.now()));
     ge('auth-screen').classList.remove('on');
     startLoadingData();
@@ -2284,7 +2331,15 @@ function initApp(){
 
 function startLoadingData(){
   var _cached=null;
-  try{ var _cs=localStorage.getItem('riki_w_data'); if(_cs)_cached=JSON.parse(_cs); }catch(e){}
+  try{
+    var _cs=localStorage.getItem('riki_w_data');
+    if(_cs) _cached=JSON.parse(_cs);
+    // Reject any cached payload that clearly came from the main RiKi dashboard.
+    if(_cached && String(_cached.app || _cached.dataSource || '').indexOf('RiKi W') < 0 && _cached.manualOnly !== true){
+      _cached = null;
+      localStorage.removeItem('riki_w_data');
+    }
+  }catch(e){ _cached=null; }
 
   // RIKI_V8_INDEX_GITHUB_FIRST_PAINT_NO_BLANK_V1
   // Manual-only remains: app open does not call Apps Script/Schwab/Rebuild.

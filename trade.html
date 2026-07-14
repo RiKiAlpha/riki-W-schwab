@@ -1230,8 +1230,8 @@ select.tradier-test-inp{appearance:none;-webkit-appearance:none;}
 </div>
   <script>
 var RIKI_W_APP_NAME = 'RiKi W — Schwab Normal Customer — Low Order Mode';
-var RIKI_W_ACCOUNT_LAST4 = 'PLACEHOLDER_WIFE_ACCOUNT_LAST4'; // replace after rikiWDiscoverAccountsForWhitelist()
-function rikiWAccountLast4_(){ return String(RIKI_W_ACCOUNT_LAST4 || '').trim(); }
+var RIKI_W_ACCOUNT_LAST4 = '8814'; // RiKi W allowed Schwab account last4
+function rikiWAccountLast4_(){ var v = String(RIKI_W_ACCOUNT_LAST4 || '').trim(); if(!v || v.indexOf('PLACEHOLDER') >= 0) v = String(localStorage.getItem('riki_w_account_last4') || '').trim(); if(!v) v = '8814'; return v; }
 function rikiWNum_(v){
   if(v == null || v === '') return 0;
   if(typeof v === 'number') return isFinite(v) ? v : 0;
@@ -2820,10 +2820,14 @@ function buildBasketPayloadFromContracts(contracts, existingRows, keepBasketId){
   if(brokerMode === 'TRADIER') {
     accounts.push('TRADIER');
   } else {
-    if(S.en1) accounts.push(rikiWAccountLast4_());
+    if(S.en1) {
+      var wLast4 = rikiWAccountLast4_();
+      if(!wLast4 || wLast4.indexOf('PLACEHOLDER') >= 0) throw new Error('RiKi W account last4 missing — cannot build basket rows.');
+      accounts.push(wLast4);
+    }
   }
 
-  if(accounts.length === 0) throw new Error('Turn on RiKi W, Unused, or both.');
+  if(accounts.length === 0) throw new Error('Turn on RiKi W account.');
   if(Number(S.basketCallPrice || 0) <= 0 || Number(S.basketPutPrice || 0) <= 0) throw new Error('Call and Put prices must be greater than zero.');
 
   var expDate = getSelectedExpiry();
@@ -2887,6 +2891,7 @@ function reviewBasket(payloadOverride){
     return;
   }
 
+  try{ console.log('RiKi W basket payload rows', payload && payload.rows ? payload.rows : []); }catch(e){}
   S.basketPendingPayload = payload;
   showBasketReview(payload);
 }

@@ -1,0 +1,14 @@
+{
+  "app": "RiKi W",
+  "manualOnly": true,
+  "dataSource": "riki-w-empty",
+  "updated": "RiKi W empty startup shell",
+  "tokenState": "unknown",
+  "dashRows": [],
+  "archRows": [],
+  "archClosed": [],
+  "allClosed": [],
+  "invRows": [],
+  "monthly": {},
+  "_savedMs": 0
+}

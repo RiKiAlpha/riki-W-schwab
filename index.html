@@ -842,7 +842,7 @@ function saveCache(d){
   try{
     if(!d) return;
     d._savedMs = Math.max(Number(d._savedMs || 0), Date.now());
-    localStorage.setItem('riki_data', JSON.stringify(d));
+    localStorage.setItem('riki_w_data', JSON.stringify(d));
     localStorage.setItem('riki_last_fresh', String(Date.now()));
   }catch(e){}
 }
@@ -2243,7 +2243,7 @@ function initApp(){
 
 function startLoadingData(){
   var _cached=null;
-  try{ var _cs=localStorage.getItem('riki_data'); if(_cs)_cached=JSON.parse(_cs); }catch(e){}
+  try{ var _cs=localStorage.getItem('riki_w_data'); if(_cs)_cached=JSON.parse(_cs); }catch(e){}
 
   // RIKI_V8_INDEX_GITHUB_FIRST_PAINT_NO_BLANK_V1
   // Manual-only remains: app open does not call Apps Script/Schwab/Rebuild.

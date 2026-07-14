@@ -438,7 +438,7 @@ body.overlaying #tabs-wrap{display:none !important;}
       <span class="tlabel">History</span>
     </div>
     <div class="tab" id="t-s">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09W.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06W.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09W.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06W.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06W.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span class="tlabel">Settings</span>
     </div>
   </div>
@@ -492,7 +492,7 @@ body.overlaying #tabs-wrap{display:none !important;}
       <circle cx="12" cy="10" r="2"/><path d="M8 16s1-2 4-2 4 2 4 2"/>
     </svg>
   </div>
-  <div id="faceid-title">RiKi is Locked</div>
+  <div id="faceid-title">RiKi W is Locked</div>
   <div id="faceid-sub">Use Face ID to unlock</div>
   <button class="abtn" id="faceid-retry" onclick="doFaceID()" style="margin-top:8px;">Try Again</button>
 </div>
@@ -552,10 +552,47 @@ function formatChurnerTimestamp_(v){
 }
 if(window.navigator.standalone||window.matchMedia('(display-mode:standalone)').matches){ document.documentElement.classList.add('pwa'); }
 var DATA=null, activeTab='d', histMode='weeks';
+
+// RIKI_W_ORIGIN_ISOLATION_V1
+// GitHub Pages uses one localStorage bucket per origin, not per repo path.
+// This prevents RiKi W from painting cached main RiKi dashboard/order state.
+function rikiWClearLegacyOriginKeys_(){
+  try{
+    [
+      'riki_data',
+      'riki_last_fresh',
+      'riki_app_mode',
+      'riki_auth_pending',
+      'riki_last_active',
+      'riki_churner_ticker',
+      'riki_churner_focus_ticker',
+      'riki_churner_focus',
+      'riki_churner_asof',
+      'riki_churner_asof_date',
+      'faceLock',
+      'webauthn_cred_id',
+      'tr_ticker',
+      'tr_exp',
+      'tr_filter',
+      'tr_rmin',
+      'tr_rmax',
+      'tr_b1',
+      'tr_b2',
+      'tr_mult',
+      'tr_en1',
+      'tr_en2',
+      'tr_basket_call_price',
+      'tr_basket_put_price',
+      'tr_low_fetch_mode'
+    ].forEach(function(k){ localStorage.removeItem(k); });
+  }catch(e){}
+}
+rikiWClearLegacyOriginKeys_();
+
 var CHURNER_LOAD_CACHE = {}; // RIKI_V7_5 fast in-memory date+ticker sheet cache
 var CHURNER_LOAD_INFLIGHT = {}; // RIKI_V7_8 prevent duplicate date/ticker load executions
 var CHURNER_REBUILD_INFLIGHT = false; // RIKI_V7_8 one rebuild from this browser tab at a time
-var appMode = localStorage.getItem('riki_app_mode') || 'legacy';
+var appMode = localStorage.getItem('riki_w_app_mode') || 'legacy';
 var churnerLogoPulseTimer_ = null;
 function setChurnerBusy_(on,label){
   DATA = DATA || {};
@@ -574,7 +611,7 @@ function isChurnerMode(){ return appMode === 'churner'; }
 function setAppMode(mode){
   haptic();
   appMode = mode === 'churner' ? 'churner' : 'legacy';
-  localStorage.setItem('riki_app_mode', appMode);
+  localStorage.setItem('riki_w_app_mode', appMode);
 
   // LEGACY_HISTORY_HIDE_DAILY_V1
   // Daily history is meaningful only in Churner mode.
@@ -615,9 +652,9 @@ function loadChurnerTicker(ticker,opts){
   ticker=String(ticker||'').trim().toUpperCase();
   var inp=getChurnerTickerInput_();
   if(inp) inp.value=ticker;
-  localStorage.setItem('riki_churner_ticker',ticker);
-  localStorage.setItem('riki_churner_focus_ticker',ticker);
-  if(ticker) localStorage.setItem('riki_churner_focus','1'); else localStorage.setItem('riki_churner_focus','0');
+  localStorage.setItem('riki_w_churner_ticker',ticker);
+  localStorage.setItem('riki_w_churner_focus_ticker',ticker);
+  if(ticker) localStorage.setItem('riki_w_churner_focus','1'); else localStorage.setItem('riki_w_churner_focus','0');
 
   // RIKI_V7_1_CHURNER_DATE_LOAD_ID_FIX_V1
   // The rendered date picker id is churner-asof-input. The previous loader read
@@ -626,8 +663,8 @@ function loadChurnerTicker(ticker,opts){
   var dateInput=getChurnerAsOfInput_();
   var asOf=dateInput && dateInput.value ? String(dateInput.value).trim() : '';
   if(asOf){
-    localStorage.setItem('riki_churner_asof',asOf);
-    localStorage.setItem('riki_churner_asof_date',asOf);
+    localStorage.setItem('riki_w_churner_asof',asOf);
+    localStorage.setItem('riki_w_churner_asof_date',asOf);
   }
 
   // RIKI_V7_7_CHURNER_TIMESTAMP_EXECUTION_LOAD_FASTFIX_V1
@@ -699,11 +736,11 @@ function rebuildChurnerData(){
   var dateInput=getChurnerAsOfInput_();
   var asOf=dateInput && dateInput.value ? String(dateInput.value).trim() : '';
   if(asOf){
-    localStorage.setItem('riki_churner_asof',asOf);
-    localStorage.setItem('riki_churner_asof_date',asOf);
+    localStorage.setItem('riki_w_churner_asof',asOf);
+    localStorage.setItem('riki_w_churner_asof_date',asOf);
   }
-  localStorage.setItem('riki_churner_ticker',ticker);
-  localStorage.setItem('riki_churner_focus_ticker',ticker);
+  localStorage.setItem('riki_w_churner_ticker',ticker);
+  localStorage.setItem('riki_w_churner_focus_ticker',ticker);
   var focus=ticker?'1':'0';
   var url=BACKEND+'?action=churnerEodBuild&ticker='+encodeURIComponent(ticker)+'&focus='+focus+'&start=2026-06-01&fast=1'+(asOf?'&asOf='+encodeURIComponent(asOf):'')+'&_='+Date.now();
   setChurnerBusy_(true,'Building selected-date Schwab ledger…');
@@ -759,19 +796,19 @@ function backfillChurnerHistory(){
 
 function clearChurnerAsOf(){
   var today = churnerTodayEt_();
-  localStorage.setItem('riki_churner_asof_date', today);
-  localStorage.setItem('riki_churner_asof', today);
+  localStorage.setItem('riki_w_churner_asof_date', today);
+  localStorage.setItem('riki_w_churner_asof', today);
 
   var el = getChurnerAsOfInput_();
   if(el) el.value = today;
 
-  loadChurnerTicker(localStorage.getItem('riki_churner_focus_ticker') || localStorage.getItem('riki_churner_ticker') || '');
+  loadChurnerTicker(localStorage.getItem('riki_w_churner_focus_ticker') || localStorage.getItem('riki_w_churner_ticker') || '');
 }
 
 function loadChurnerAllTickers(){
-  localStorage.removeItem('riki_churner_focus_ticker');
-  localStorage.removeItem('riki_churner_ticker');
-  localStorage.setItem('riki_churner_focus','0');
+  localStorage.removeItem('riki_w_churner_focus_ticker');
+  localStorage.removeItem('riki_w_churner_ticker');
+  localStorage.setItem('riki_w_churner_focus','0');
 
   var tickerEl = getChurnerTickerInput_();
   if(tickerEl) tickerEl.value = '';
@@ -843,7 +880,7 @@ function saveCache(d){
     if(!d) return;
     d._savedMs = Math.max(Number(d._savedMs || 0), Date.now());
     localStorage.setItem('riki_w_data', JSON.stringify(d));
-    localStorage.setItem('riki_last_fresh', String(Date.now()));
+    localStorage.setItem('riki_w_last_fresh', String(Date.now()));
   }catch(e){}
 }
 function showTokenExpired(){
@@ -871,7 +908,7 @@ function isDataStale(d){
   var isMarket = day>=1 && day<=5 && t>=570 && t<=960;
   if(!isMarket) return false;
   try {
-    var cached = localStorage.getItem('riki_last_fresh');
+    var cached = localStorage.getItem('riki_w_last_fresh');
     if(!cached) return false;
     return Date.now() - parseInt(cached) > 2 * 60 * 60 * 1000;
   } catch(e){ return false; }
@@ -892,7 +929,7 @@ function doRefresh(){
   if(isChurnerMode()){
     try { CHURNER_LOAD_CACHE = {}; } catch(e) {}
     var tEl = getChurnerTickerInput_();
-    var t = (tEl && tEl.value) ? String(tEl.value).trim().toUpperCase() : (localStorage.getItem('riki_churner_focus_ticker') || localStorage.getItem('riki_churner_ticker') || '');
+    var t = (tEl && tEl.value) ? String(tEl.value).trim().toUpperCase() : (localStorage.getItem('riki_w_churner_focus_ticker') || localStorage.getItem('riki_w_churner_ticker') || '');
     toast('Loading saved Churner ledger…', 1800);
     loadChurnerTicker(t || '', {quiet:false});
     return;
@@ -923,7 +960,7 @@ function doRefresh(){
 }
 function doAuth(){
   haptic();toast('Authenticating…');
-  try{ localStorage.setItem('riki_auth_pending','1'); }catch(x){}
+  try{ localStorage.setItem('riki_w_auth_pending','1'); }catch(x){}
   fetch(BACKEND+'?action=authUrl').then(function(r){return r.json();}).then(function(d){if(d.url)window.open(d.url,'_blank');else toast('No URL returned');}).catch(function(e){toast('Auth error: '+errMsg(e));});
 }
 
@@ -1202,11 +1239,11 @@ function churnerTodayEt_(){
 }
 
 function churnerSavedTicker_(){
-  return String(localStorage.getItem('riki_churner_focus_ticker') || localStorage.getItem('riki_churner_ticker') || '').trim().toUpperCase();
+  return String(localStorage.getItem('riki_w_churner_focus_ticker') || localStorage.getItem('riki_w_churner_ticker') || '').trim().toUpperCase();
 }
 
 function churnerSavedAsOf_(){
-  return String(localStorage.getItem('riki_churner_asof_date') || localStorage.getItem('riki_churner_asof') || '').trim();
+  return String(localStorage.getItem('riki_w_churner_asof_date') || localStorage.getItem('riki_w_churner_asof') || '').trim();
 }
 
 function churnerResultAsOf_(){
@@ -1224,7 +1261,7 @@ function loadChurnerLastState(forceTodayIfBlank){
     var today = churnerTodayEt_();
     if(!asOf || asOf < today){
       asOf = today;
-      localStorage.setItem('riki_churner_asof_date', asOf);
+      localStorage.setItem('riki_w_churner_asof_date', asOf);
     }
   }
 
@@ -1257,7 +1294,7 @@ function churnerBootForceRefresh_(){
     var asOf = churnerSavedAsOf_();
     if(!asOf){
       asOf = churnerTodayEt_();
-      localStorage.setItem('riki_churner_asof_date', asOf);
+      localStorage.setItem('riki_w_churner_asof_date', asOf);
     }
 
     var asOfEl = ge('churner-asof-input');
@@ -1305,7 +1342,7 @@ var chBusyAttr = chBusy ? ' disabled' : '';
 
   banner.innerHTML =
     '<div><div class="churner-title">Churner Analytics</div>' +
-      '<div class="churner-sub">TxCache only · no Schwab ping · from '+((chData() && chData().churnerStartDate) || localStorage.getItem('riki_churner_start_date') || '2026-06-01')+
+      '<div class="churner-sub">TxCache only · no Schwab ping · from '+((chData() && chData().churnerStartDate) || localStorage.getItem('riki_w_churner_start_date') || '2026-06-01')+
         ' · as of '+chAsOf+
         (chGeneratedAt ? ' · calc '+chGeneratedAt : '')+
         (chFocusTicker ? ' · '+chFocusTicker : ' · all tickers')+
@@ -1390,7 +1427,7 @@ var chBusyAttr = chBusy ? ' disabled' : '';
 
   var todayIso = new Date().toISOString().substring(0,10);
 
-  var focusTicker = (localStorage.getItem('riki_churner_focus_ticker') || '').trim().toUpperCase();
+  var focusTicker = (localStorage.getItem('riki_w_churner_focus_ticker') || '').trim().toUpperCase();
 
   var expRows=(c.expiryRows||[]).slice().filter(function(r){
     if(focusTicker && String(r.ticker || '').toUpperCase() !== focusTicker) return false;
@@ -1980,19 +2017,19 @@ function renderSettings(d){
   faceCard.className = 'scard';
   faceCard.id = 'face-card';
 
-  var faceLockOn = localStorage.getItem('faceLock') === '1';
-  var hasCred    = !!localStorage.getItem('webauthn_cred_id');
+  var riki_w_faceLockOn = localStorage.getItem('riki_w_faceLock') === '1';
+  var hasCred    = !!localStorage.getItem('riki_w_webauthn_cred_id');
 
   var faceRow = document.createElement('div');
   faceRow.className = 'srow';
   faceRow.innerHTML =
     '<div><div class="slbl">Require Face ID</div>' +
     '<div class="ssub">' + (hasCred ? 'Lock after 8hr background gap' : 'Tap to enroll Face ID') + '</div></div>' +
-    '<div class="tog' + (faceLockOn ? ' on' : '') + '" id="face-tog" onclick="toggleFaceLock(this)">' +
+    '<div class="tog' + (riki_w_faceLockOn ? ' on' : '') + '" id="face-tog" onclick="toggleFaceLock(this)">' +
     '<div class="tog-track"></div><div class="tog-thumb"></div></div>';
   faceCard.appendChild(faceRow);
 
-  if(faceLockOn && hasCred){
+  if(riki_w_faceLockOn && hasCred){
     var lockRow = document.createElement('div');
     lockRow.className = 'srow';
     lockRow.innerHTML =
@@ -2065,19 +2102,19 @@ function onGoogleSignIn(response){
     var payload = JSON.parse(atob(response.credential.split('.')[1]));
     if(payload.email !== ALLOWED_EMAIL){ ge('auth-err').style.display='block'; return; }
     localStorage.setItem('riki_google_email', payload.email);
-    localStorage.setItem('riki_last_active', String(Date.now()));
+    localStorage.setItem('riki_w_last_active', String(Date.now()));
     ge('auth-screen').classList.remove('on');
     startLoadingData();
   } catch(e){ ge('auth-err').style.display='block'; }
 }
 
 function checkLock(){
-  if(localStorage.getItem('faceLock')!=='1') return false;
-  if(!localStorage.getItem('webauthn_cred_id')) return false;
+  if(localStorage.getItem('riki_w_faceLock')!=='1') return false;
+  if(!localStorage.getItem('riki_w_webauthn_cred_id')) return false;
 
-  var gap = Date.now() - parseInt(localStorage.getItem('riki_last_active')||'0', 10);
+  var gap = Date.now() - parseInt(localStorage.getItem('riki_w_last_active')||'0', 10);
   if(gap <= 8*60*60*1000){
-    localStorage.setItem('riki_last_active', String(Date.now()));
+    localStorage.setItem('riki_w_last_active', String(Date.now()));
     return false;
   }
 
@@ -2094,7 +2131,7 @@ function checkLock(){
   return true;
 }
 function doFaceID(){
-  var credId = localStorage.getItem('webauthn_cred_id');
+  var credId = localStorage.getItem('riki_w_webauthn_cred_id');
   if(!credId){ ge('faceid-screen').classList.remove('on'); return; }
   function b64toBuf(b){ var bin=atob(b.replace(/-/g,'+').replace(/_/g,'/')),buf=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); return buf.buffer; }
 navigator.credentials.get({ publicKey:{
@@ -2106,7 +2143,7 @@ navigator.credentials.get({ publicKey:{
   ge('faceid-screen').classList.remove('on');
   ge('faceid-retry').style.display='none';
   ge('faceid-sub').textContent='Use Face ID to unlock';
-  localStorage.setItem('riki_last_active', String(Date.now()));
+  localStorage.setItem('riki_w_last_active', String(Date.now()));
   startLoadingData();
 }).catch(function(){
     ge('faceid-retry').style.display='inline-flex';
@@ -2117,7 +2154,7 @@ navigator.credentials.get({ publicKey:{
 
 function toggleFaceLock(el){
   var on = el.classList.toggle('on');
-  localStorage.setItem('faceLock', on?'1':'0');
+  localStorage.setItem('riki_w_faceLock', on?'1':'0');
   if(on){
     function bufToB64(buf){ return btoa(String.fromCharCode.apply(null,new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,''); }
     navigator.credentials.create({ publicKey:{
@@ -2128,20 +2165,20 @@ function toggleFaceLock(el){
       authenticatorSelection:{ userVerification:'required' },
       timeout:60000
     }}).then(function(cred){
-      localStorage.setItem('webauthn_cred_id', bufToB64(cred.rawId));
+      localStorage.setItem('riki_w_webauthn_cred_id', bufToB64(cred.rawId));
       renderSettings(DATA); toast('Face ID enrolled');
     }).catch(function(){
-      el.classList.remove('on'); localStorage.setItem('faceLock','0');
+      el.classList.remove('on'); localStorage.setItem('riki_w_faceLock','0');
       toast('Face ID enrollment failed');
     });
   } else {
-    localStorage.removeItem('webauthn_cred_id');
+    localStorage.removeItem('riki_w_webauthn_cred_id');
     renderSettings(DATA);
   }
 }
 
 function lockNow(){
-  localStorage.setItem('riki_last_active','0');
+  localStorage.setItem('riki_w_last_active','0');
   toast('Locked — Face ID required on next open');
 }
 
@@ -2183,7 +2220,11 @@ function rikiFetchLiveData_(){
 }
 
 function rikiFetchGithubFallback_(){
-  return fetch(DATA_JSON + '?_=' + Date.now(), { cache:'no-store' })
+  var u = String(DATA_JSON || '').trim();
+  if(!u){
+    return Promise.resolve(null);
+  }
+  return fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now(), { cache:'no-store' })
     .then(function(r){ if(!r.ok) throw new Error('GitHub JSON HTTP '+r.status); return r.json(); });
 }
 
@@ -2218,7 +2259,7 @@ function rikiRefreshTokenStatusOnly_(reason){
     .then(function(r){ return r.json(); })
     .then(function(tok){
       rikiApplyTokenStatus_(tok);
-      try{ localStorage.removeItem('riki_auth_pending'); }catch(x){}
+      try{ localStorage.removeItem('riki_w_auth_pending'); }catch(x){}
       return tok;
     })
     .catch(function(e){ try{ console.warn('tokenStatus refresh failed', e); }catch(x){} });
@@ -2226,7 +2267,7 @@ function rikiRefreshTokenStatusOnly_(reason){
 
 function rikiMaybeRefreshAuthDisplay_(reason){
   var pending=false;
-  try{ pending = localStorage.getItem('riki_auth_pending') === '1'; }catch(x){}
+  try{ pending = localStorage.getItem('riki_w_auth_pending') === '1'; }catch(x){}
   var qs='';
   try{ qs = window.location.search || ''; }catch(x){}
   if(pending || /[?&](code|auth|oauth|state)=/i.test(qs)){
@@ -2255,7 +2296,7 @@ function startLoadingData(){
   } else {
     DATA={
       dashRows:[], archRows:[], archClosed:[], allClosed:[], invRows:[],
-      updated:'Loading saved dashboard…', tokenState:'unknown',
+      updated:'RiKi W ready — no saved dashboard yet', tokenState:'unknown',
       churner:null, manualOnly:true, dataSource:'empty-shell', _savedMs:0
     };
     renderAll(DATA);
@@ -2265,7 +2306,7 @@ function startLoadingData(){
     .then(function(githubData){
       if(!rikiShouldPaintGithubFirst_(githubData, _cached)) return;
       githubData = rikiPrepareIncomingData_(githubData);
-      githubData.dataSource = githubData.dataSource || 'GitHub:d8f3a.json';
+      githubData.dataSource = githubData.dataSource || 'RiKi W static JSON';
       DATA = githubData;
       renderAll(githubData);
       saveCache(githubData);

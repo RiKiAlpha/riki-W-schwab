@@ -800,6 +800,14 @@ select.tradier-test-inp{appearance:none;-webkit-appearance:none;}
     ::-webkit-scrollbar{width:0;height:0;}
     input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
     input[type=number]{-moz-appearance:textfield;}
+  
+/* RIKI_W_ONE_ACCOUNT_UI_V1 */
+#a2-block,#aq2-col,#bp2,#cf-bp2,#hdr-bp2{display:none!important;}
+.ratio-sep{display:none!important;}
+.bp-hdr-col:nth-child(2),.bprow .bpcol:nth-child(2){display:none!important;}
+.acct-qty-row{justify-content:flex-start;}
+.aqcol{max-width:180px;}
+
   </style>
 </head>
 <body>
@@ -856,7 +864,7 @@ select.tradier-test-inp{appearance:none;-webkit-appearance:none;}
           <div class="base-row">
             <span style="font-family:var(--mono);font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.04em;flex-shrink:0;">—</span>
             <div class="bstep" onclick="adjBase(2,-1)">-</div>
-            <input class="binp" type="number" id="base2" value="3" min="0" max="99" oninput="onBaseInput(2,this.value)">
+            <input class="binp" type="number" id="base2" value="0" min="0" max="99" oninput="onBaseInput(2,this.value)">
             <div class="bstep" onclick="adjBase(2,1)">+</div>
             <div class="tog-divider"></div>
             <div class="acct-tog on" id="a2-tog" onclick="toggleAcct(2)"><div class="acct-tog-thumb"></div></div>
@@ -1071,7 +1079,7 @@ select.tradier-test-inp{appearance:none;-webkit-appearance:none;}
         <div class="aqlbl">Unused</div>
         <div class="aqrow">
           <div class="aqstep" onclick="adjAQ(2,-1)">-</div>
-          <input class="aqinp" type="number" id="aq2" value="3" min="0" oninput="onAQInput(2,this.value)">
+          <input class="aqinp" type="number" id="aq2" value="0" min="0" oninput="onAQInput(2,this.value)">
           <div class="aqstep" onclick="adjAQ(2,1)">+</div>
         </div>
       </div>
@@ -1226,27 +1234,27 @@ function rikiWAccountLast4_(){ return String(RIKI_W_ACCOUNT_LAST4 || '').trim();
 function rikiWFirstBuyingPower_(bp){ bp = bp || {}; return bp.RIKI_W || bp.ACCOUNT_1 || bp[rikiWAccountLast4_()] || bp['RiKi W'] || 0; }
 var BACKEND = 'https://script.google.com/a/macros/rikiterminal.com/s/AKfycbzY4H7idtbqpC1EBvm0z11qGpyo3_LZK8xGVYxprgrsFBfCOQdaMMMX2DaXoEpEaIaP/exec';
 var S = {
-  ticker: localStorage.getItem('tr_ticker') || 'MSTR',
-  expiryIdx: parseInt(localStorage.getItem('tr_exp') || '0'),
-  filter: localStorage.getItem('tr_filter') || 'B',
-  rangeMin: parseFloat(localStorage.getItem('tr_rmin')) || 40,
-  rangeMax: parseFloat(localStorage.getItem('tr_rmax')) || 80,
-  base1: parseInt(localStorage.getItem('tr_b1')) || 4,
+  ticker: localStorage.getItem('riki_w_tr_ticker') || 'MSTR',
+  expiryIdx: parseInt(localStorage.getItem('riki_w_tr_exp') || '0'),
+  filter: localStorage.getItem('riki_w_tr_filter') || 'B',
+  rangeMin: parseFloat(localStorage.getItem('riki_w_tr_rmin')) || 40,
+  rangeMax: parseFloat(localStorage.getItem('riki_w_tr_rmax')) || 80,
+  base1: parseInt(localStorage.getItem('riki_w_tr_b1')) || 4,
   base2: 0,
-  mult: parseInt(localStorage.getItem('tr_mult')) || 1,
-  en1: localStorage.getItem('tr_en1') !== '0',
+  mult: parseInt(localStorage.getItem('riki_w_tr_mult')) || 1,
+  en1: localStorage.getItem('riki_w_tr_en1') !== '0',
   en2: false,
    expanded: false, sheetState:null, strike:null, qtyA1:4, qtyA2:0,
   price:0.02, expiryDates:null, data:null, bpMap:{}, marketOpen:false,
   pollTimer:null, cdTimer:null, cdSecs:10, fetching:false,
   basketMode:false,
   basketSelected:{},
-  basketCallPrice:parseFloat(localStorage.getItem('tr_basket_call_price') || '0.05') || 0.05,
-  basketPutPrice:parseFloat(localStorage.getItem('tr_basket_put_price') || '0.03') || 0.03,
+  basketCallPrice:parseFloat(localStorage.getItem('riki_w_tr_basket_call_price') || '0.05') || 0.05,
+  basketPutPrice:parseFloat(localStorage.getItem('riki_w_tr_basket_put_price') || '0.03') || 0.03,
   basketPendingPayload:null,
   basketLastPayload:null,
   basketLastResult:null,
-  basketResumeCanContinue:false,  basketRetryTimerId:null,    churnerAnalysis:null,  churnerInlineReviewed:false,  activeSpot:0,  lowFetchMode:localStorage.getItem('tr_low_fetch_mode') === '1',  quoteMode:'SLEEP', quoteLiveStartedAt:0, quoteLiveMaxMs:60*60*1000, quotePollMs:0, quoteTimer:null, bidAskRefreshing:false, lastQuoteFetchAt:0, lastQuoteFetchLabel:'', quickStoScorecardRows:[], quickStoScorecardUpdatedAt:'', churnerInlineReviewActive:false, churnerCloseAfterBasketResult:false, brokerMode:'SCHWAB', tradierStatus:null, tradierDiagnostics:null, tradierLastAction:''};
+  basketResumeCanContinue:false,  basketRetryTimerId:null,    churnerAnalysis:null,  churnerInlineReviewed:false,  activeSpot:0,  lowFetchMode:localStorage.getItem('riki_w_tr_low_fetch_mode') === '1',  quoteMode:'SLEEP', quoteLiveStartedAt:0, quoteLiveMaxMs:60*60*1000, quotePollMs:0, quoteTimer:null, bidAskRefreshing:false, lastQuoteFetchAt:0, lastQuoteFetchLabel:'', quickStoScorecardRows:[], quickStoScorecardUpdatedAt:'', churnerInlineReviewActive:false, churnerCloseAfterBasketResult:false, brokerMode:'SCHWAB', tradierStatus:null, tradierDiagnostics:null, tradierLastAction:''};
 
 // ==========================================================
 // RIKI_V6_2_BIDASK_JSON_AND_ANALYZE_MODAL_CLOSE_FIX_V1
@@ -1405,7 +1413,7 @@ function toggleLowFetchMode(){
   haptic();
   var cb = ge('low-fetch-cb');
   S.lowFetchMode = !!(cb && cb.checked);
-  localStorage.setItem('tr_low_fetch_mode', S.lowFetchMode ? '1' : '0');
+  localStorage.setItem('riki_w_tr_low_fetch_mode', S.lowFetchMode ? '1' : '0');
   paintLowFetchMode();
 
   if(S.lowFetchMode){
@@ -1707,10 +1715,10 @@ function wakeQuotes(reason){
 }
 function savePref(k,v){ localStorage.setItem(k,String(v)); }
 function saveAll(){
-  savePref('tr_ticker',S.ticker); savePref('tr_exp',S.expiryIdx); savePref('tr_filter',S.filter);
-  savePref('tr_rmin',S.rangeMin); savePref('tr_rmax',S.rangeMax);
-  savePref('tr_b1',S.base1); savePref('tr_b2',S.base2); savePref('tr_mult',S.mult);
-  savePref('tr_en1',S.en1?'1':'0'); savePref('tr_en2',S.en2?'1':'0');
+  savePref('riki_w_tr_ticker',S.ticker); savePref('riki_w_tr_exp',S.expiryIdx); savePref('riki_w_tr_filter',S.filter);
+  savePref('riki_w_tr_rmin',S.rangeMin); savePref('riki_w_tr_rmax',S.rangeMax);
+  savePref('riki_w_tr_b1',S.base1); savePref('riki_w_tr_b2',S.base2); savePref('riki_w_tr_mult',S.mult);
+  savePref('riki_w_tr_en1',S.en1?'1':'0'); savePref('riki_w_tr_en2',S.en2?'1':'0');
 }
 function editTicker(){
   var badge=ge('tkr-badge'),inp=ge('tkr-inp');
@@ -2005,7 +2013,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 function rikiWApplySingleAccountUi_(){
   S.en1 = true; S.en2 = false; S.qtyA2 = 0; S.base2 = 0;
-  try { localStorage.setItem('tr_en1','1'); localStorage.setItem('tr_en2','0'); localStorage.setItem('riki_broker_mode','SCHWAB'); } catch(e) {}
+  try { localStorage.setItem('riki_w_tr_en1','1'); localStorage.setItem('riki_w_tr_en2','0'); localStorage.setItem('riki_broker_mode','SCHWAB'); } catch(e) {}
   var idsToDisable = ['a2-block'];
   idsToDisable.forEach(function(id){ var el=ge(id); if(el){ el.className='acct-block disabled'; el.style.opacity='.28'; el.style.pointerEvents='none'; }});
   var a2Tog=ge('a2-tog'); if(a2Tog){ a2Tog.className='acct-tog'; a2Tog.style.pointerEvents='none'; a2Tog.title='RiKi W single-account mode'; }
@@ -2274,8 +2282,8 @@ function syncBasketPrices(){
   var pp = parseFloat(ge('basket-put-price') && ge('basket-put-price').value);
   if(!isNaN(cp) && cp > 0) S.basketCallPrice = cp;
   if(!isNaN(pp) && pp > 0) S.basketPutPrice = pp;
-  localStorage.setItem('tr_basket_call_price', String(S.basketCallPrice));
-  localStorage.setItem('tr_basket_put_price', String(S.basketPutPrice));
+  localStorage.setItem('riki_w_tr_basket_call_price', String(S.basketCallPrice));
+  localStorage.setItem('riki_w_tr_basket_put_price', String(S.basketPutPrice));
   paintBasketControls();
 }
 
